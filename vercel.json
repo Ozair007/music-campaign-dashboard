@@ -7,13 +7,19 @@
     },
     {
       "src": "frontend/package.json",
-      "use": "@vercel/static-build"
+      "use": "@vercel/static-build",
+      "config": {
+        "outputDirectory": "dist"
+      }
     }
   ],
   "routes": [
     {
       "src": "/trpc/(.*)",
       "dest": "backend/src/server.ts"
+    },
+    {
+      "handle": "filesystem"
     },
     {
       "src": "/(.*)",
