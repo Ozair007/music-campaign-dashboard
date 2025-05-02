@@ -39,7 +39,7 @@ export const appRouter = t.router({
         brand: input.brand,
         start_date: input.start_date,
         end_date: input.end_date,
-        budget: input.budget,
+        budget: String(input.budget),
         description: input.description,
         image_url: input.image_url,
       };
@@ -64,7 +64,7 @@ export const appRouter = t.router({
         ...(input.brand && { brand: input.brand }),
         ...(input.start_date && { start_date: input.start_date }),
         ...(input.end_date && { end_date: input.end_date }),
-        ...(input.budget && { budget: input.budget }),
+        ...(input.budget !== undefined && { budget: String(input.budget) }),
         ...(input.description && { description: input.description }),
         ...(input.image_url && { image_url: input.image_url }),
       };
