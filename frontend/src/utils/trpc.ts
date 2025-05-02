@@ -8,7 +8,7 @@ export const trpc = createTRPCReact<AppRouter>();
 export const client = trpc.createClient({
   links: [
     httpBatchLink({
-      url: 'http://localhost:3001/trpc', // your backend URL
+      url: 'https://music-campaign-dashboard-hg8f.vercel.app/trpc', // your backend URL
     }),
   ],
 });
