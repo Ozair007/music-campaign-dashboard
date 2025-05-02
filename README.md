@@ -53,7 +53,7 @@ A modern full-stack admin dashboard for managing music campaigns, built with:
 ### 1. Clone the Repo
 
 ```bash
-git clone https://github.com/yourusername/music-campaign-dashboard.git
+git clone https://github.com/Ozair007/music-campaign-dashboard.git
 cd music-campaign-dashboard
 ```
 
