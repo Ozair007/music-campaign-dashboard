@@ -1,8 +1,8 @@
 import { initTRPC } from '@trpc/server';
 import { z } from 'zod';
-import { Campaign, NewCampaign, campaigns } from '../supabase/schema';
+import { NewCampaign, campaigns } from './supabase/schema';
 import { db } from './db';
-import { eq, gt } from 'drizzle-orm';
+import { eq, gt, sql } from 'drizzle-orm';
 
 const t = initTRPC.create();
 
@@ -37,8 +37,8 @@ export const appRouter = t.router({
       const newCampaign: NewCampaign = {
         title: input.title,
         brand: input.brand,
-        start_date: new Date(input.start_date),
-        end_date: new Date(input.end_date),
+        start_date: input.start_date,
+        end_date: input.end_date,
         budget: input.budget,
         description: input.description,
         image_url: input.image_url,
@@ -62,8 +62,8 @@ export const appRouter = t.router({
       const updates = {
         ...(input.title && { title: input.title }),
         ...(input.brand && { brand: input.brand }),
-        ...(input.start_date && { start_date: new Date(input.start_date) }),
-        ...(input.end_date && { end_date: new Date(input.end_date) }),
+        ...(input.start_date && { start_date: input.start_date }),
+        ...(input.end_date && { end_date: input.end_date }),
         ...(input.budget && { budget: input.budget }),
         ...(input.description && { description: input.description }),
         ...(input.image_url && { image_url: input.image_url }),
@@ -84,7 +84,7 @@ export const appRouter = t.router({
       db.select({ count: sql<number>`count(*)` }).from(campaigns),
       db.select({ count: sql<number>`count(*)` })
         .from(campaigns)
-        .where(gt(campaigns.end_date, new Date())),
+        .where(gt(campaigns.end_date, sql`CURRENT_DATE`)),
     ]);
   
     return {
