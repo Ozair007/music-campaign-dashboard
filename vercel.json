@@ -36,8 +36,5 @@
         "Cache-Control": "no-cache"
       }
     }
-  ],
-  "errorPages": {
-    "404": "/frontend/dist/index.html"
-  }
+  ]
 }
