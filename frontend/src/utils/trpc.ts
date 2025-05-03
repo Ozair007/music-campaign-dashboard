@@ -8,7 +8,7 @@ export const trpc = createTRPCReact<AppRouter>();
 export const client = trpc.createClient({
   links: [
     httpBatchLink({
-      url: `https://music-campaign-dashboard-eb3e.vercel.app/trpc`,
+      url: `/api`,
     }),
   ],
 });
