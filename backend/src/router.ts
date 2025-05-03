@@ -3,8 +3,10 @@ import { z } from 'zod';
 import { NewCampaign, campaigns } from './supabase/schema';
 import { db } from './db';
 import { eq, gt, sql } from 'drizzle-orm';
+import { Context } from './context';
 
-const t = initTRPC.create();
+// const t = initTRPC.create();
+const t = initTRPC.context<Context>().create();
 
 export const appRouter = t.router({
   campaignList: t.procedure.query(async () => {
@@ -93,5 +95,7 @@ export const appRouter = t.router({
     };
   }),
 });
+
+export const publicProcedure = t.procedure;
 
 export type AppRouter = typeof appRouter;
