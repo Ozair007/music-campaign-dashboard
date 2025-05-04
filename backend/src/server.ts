@@ -1,29 +1,33 @@
 import express from 'express';
 import cors from 'cors';
-import * as trpcExpress from '@trpc/server/adapters/express';
-import { appRouter } from './router';
-// import { createContext } from './context';
-import { db } from './db';
-import "dotenv/config";
+import bodyParser from 'body-parser';
+import { campaignsRouter } from './routes/campaigns';
 
 const app = express();
-app.use(cors(
-  {
-    origin: "*",
-    credentials: true,
-  }
-));
-app.use(express.json());
 
-app.use(
-  '/trpc',
-  trpcExpress.createExpressMiddleware({
-    router: appRouter,
-    // createContext,
-  })
-);
+// Middleware
+app.use(cors({
+  origin: ['http://localhost:5173']
+}));
+app.use(bodyParser.json());
 
-const PORT = process.env.PORT;
-app.listen(PORT, () => {
+// Routes
+app.use('/api/campaigns', campaignsRouter);
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'healthy' });
+});
+
+// Error handling middleware
+app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Something went wrong!' });
+});
+
+const PORT = process.env.PORT || 3001;
+export const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+export default app;

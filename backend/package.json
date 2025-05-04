@@ -1,41 +1,28 @@
 {
-  "name": "backend",
+  "name": "music-campaign-backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "main": "dist/server.js",
   "scripts": {
-    "build": "tsc",
-    "vercel-build": "tsc",
     "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "lint": "eslint . --ext .ts"
-  },
-  "engines": {
-    "node": "22.x"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "devDependencies": {
-    "@types/cors": "^2.8.17",
-    "@types/express": "^5.0.1",
-    "@types/multer": "^1.4.12",
-    "@types/node": "^22.15.3",
-    "ts-node-dev": "^2.0.0",
-    "typescript": "^5.8.3"
+    "build": "tsc"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.4",
-    "@trpc/server": "^11.1.2",
-    "@types/pg": "^8.11.14",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
-    "drizzle-kit": "^0.31.0",
     "drizzle-orm": "^0.43.1",
-    "express": "^5.1.0",
-    "multer": "^1.4.5-lts.2",
+    "express": "^4.21.2",
     "pg": "^8.15.6",
-    "zod": "^3.24.3"
+    "zod": "^3.22.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.17.32",
+    "@types/pg": "^8.11.14",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.8.3"
   }
 }
