@@ -1,20 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { Spinner } from './Spinner';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/utils/supabase';
-
-export type CampaignFormData = {
-  title: string;
-  brand: string;
-  start_date: string;
-  end_date: string;
-  budget: number;
-  description?: string;
-  image_url?: string;
-};
+import { CampaignSchema } from '@/schemas/campaign';
+import { format, parseISO } from 'date-fns';
+import { CampaignFormData } from '@/types';
 
 type Props = {
   initialData?: CampaignFormData;
@@ -23,28 +19,32 @@ type Props = {
 };
 
 export default function CampaignForm({ initialData, onSubmit, isLoading }: Props) {
-  const [form, setForm] = useState<CampaignFormData>(
-    initialData ?? {
+  const { 
+    register,
+    handleSubmit,
+    formState: { errors },
+    watch,
+    trigger
+  } = useForm<CampaignFormData>({
+    resolver: zodResolver(CampaignSchema),
+    defaultValues: initialData ? {
+      ...initialData,
+      image_url: initialData.image_url || '',
+      start_date: format(parseISO(initialData.start_date), 'yyyy-MM-dd'),
+      end_date: format(parseISO(initialData.end_date), 'yyyy-MM-dd')
+    } : {
       title: '',
       brand: '',
-      start_date: new Date().toISOString().split('T')[0],
-      end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      start_date: format(new Date(), 'yyyy-MM-dd'),
+      end_date: format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
       budget: 0,
       description: '',
+      image_url: ''
     }
-  );
+  });
+
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setForm(prev => ({
-      ...prev,
-      [name]: name === 'budget' ? parseFloat(value) || 0 : value
-    }));
-  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) {
@@ -53,27 +53,25 @@ export default function CampaignForm({ initialData, onSubmit, isLoading }: Props
   };
 
   const uploadImage = async (file: File): Promise<string> => {
-    const { data: uploadData } = await supabase.storage
+    const fileExt = file.name.split('.').pop();
+    const fileName = `campaign-${Date.now()}.${fileExt}`;
+    
+    const { data: uploadData, error } = await supabase.storage
       .from('campaign-images')
-      .upload(`campaign-${Date.now()}`, file);
+      .upload(fileName, file);
 
-      let imageUrl = '';
-    if (uploadData) {
-      const { data: { publicUrl } } = supabase.storage
-        .from('campaign-images')
-        .getPublicUrl(uploadData.path);
+    if (error) throw error;
 
-      imageUrl = publicUrl;
-    }
+    const { data: { publicUrl } } = supabase.storage
+      .from('campaign-images')
+      .getPublicUrl(uploadData.path);
 
-    return imageUrl;
+    return publicUrl;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const processSubmit = async (data: CampaignFormData) => {
     try {
-      let imageUrl = form.image_url;
+      let imageUrl = data.image_url;
       
       if (imageFile) {
         setUploadProgress(0);
@@ -82,37 +80,44 @@ export default function CampaignForm({ initialData, onSubmit, isLoading }: Props
       }
 
       await onSubmit({ 
-        ...form, 
-        image_url: imageUrl,
-        budget: Number(form.budget)
+        ...data,
+        image_url: imageUrl
       });
 
     } catch (error) {
-      toast("Error has occurred", {
-        description: "Cannot upload image at the moment",
+      toast.error("Error occurred", {
+        description: error instanceof Error ? error.message : "Failed to save campaign"
       });
-      console.log(error);
     } finally {
       setUploadProgress(null);
     }
   };
 
+  const startDate = watch('start_date');
+  useEffect(() => {
+    trigger('end_date');
+  }, [startDate, trigger]);
+
+
   return (
     <Card className="max-w-2xl mx-auto p-6">
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(processSubmit, () => {
+        toast.error("Validation error", {
+          description: "Please check the form fields."
+        });
+      })}>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="title" className="block text-sm font-medium">
-              Title *
-            </label>
-            <Input
-              id="title"
-              name="title"
-              value={form.title}
-              onChange={handleChange}
-              required
-            />
-          </div>
+           {/* Title Field */}
+           <div className="space-y-2">
+              <label htmlFor="title" className="block text-sm font-medium">
+                Title *
+              </label>
+              <Input
+                id="title"
+                {...register('title')}
+                onError={() =>errors.title?.message}
+              />
+            </div>
 
           <div className="space-y-2">
             <label htmlFor="brand" className="block text-sm font-medium">
@@ -120,13 +125,13 @@ export default function CampaignForm({ initialData, onSubmit, isLoading }: Props
             </label>
             <Input
               id="brand"
-              name="brand"
-              value={form.brand}
-              onChange={handleChange}
+              {...register('brand')}
+              onError={() => errors.brand?.message}
               required
             />
           </div>
 
+          {/* Date Fields */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label htmlFor="start_date" className="block text-sm font-medium">
@@ -134,10 +139,9 @@ export default function CampaignForm({ initialData, onSubmit, isLoading }: Props
               </label>
               <Input
                 id="start_date"
-                name="start_date"
                 type="date"
-                value={form.start_date}
-                onChange={handleChange}
+                {...register('start_date')}
+                onError={() => errors.start_date?.message}
                 required
               />
             </div>
@@ -148,29 +152,27 @@ export default function CampaignForm({ initialData, onSubmit, isLoading }: Props
               </label>
               <Input
                 id="end_date"
-                name="end_date"
                 type="date"
-                value={form.end_date}
-                onChange={handleChange}
-                min={form.start_date}
-                required
+                {...register('end_date')}
+                min={watch('start_date')}
+                onError={() => errors.end_date?.message}
               />
             </div>
           </div>
 
+          
+          {/* Budget Field */}
           <div className="space-y-2">
             <label htmlFor="budget" className="block text-sm font-medium">
               Budget ($) *
             </label>
             <Input
               id="budget"
-              name="budget"
               type="number"
               min="0"
               step="0.01"
-              value={form.budget}
-              onChange={handleChange}
-              required
+              {...register('budget', { valueAsNumber: true })}
+              onError={() => errors.budget?.message}
             />
           </div>
 
@@ -180,10 +182,9 @@ export default function CampaignForm({ initialData, onSubmit, isLoading }: Props
             </label>
             <Textarea
               id="description"
-              name="description"
               rows={4}
-              value={form.description}
-              onChange={handleChange}
+              {...register('description')}
+              onError={() => errors.description?.message}
             />
           </div>
 
@@ -200,10 +201,10 @@ export default function CampaignForm({ initialData, onSubmit, isLoading }: Props
             {uploadProgress !== null && (
               <progress value={uploadProgress} max="100" className="w-full" />
             )}
-            {(form.image_url || imageFile) && (
+            {(watch('image_url') || imageFile) && (
               <div className="mt-2">
                 <img
-                  src={imageFile ? URL.createObjectURL(imageFile) : form.image_url}
+                  src={imageFile ? URL.createObjectURL(imageFile) : watch('image_url')}
                   alt="Preview"
                   className="h-32 object-cover rounded-md"
                 />
@@ -213,7 +214,7 @@ export default function CampaignForm({ initialData, onSubmit, isLoading }: Props
 
           <Button
             type="submit"
-            className="w-full"
+            className="w-full cursor-pointer"
             disabled={isLoading || uploadProgress !== null}
           >
             {isLoading || uploadProgress !== null ? (
@@ -230,8 +231,3 @@ export default function CampaignForm({ initialData, onSubmit, isLoading }: Props
     </Card>
   );
 }
-
-// Small spinner component
-const Spinner = () => (
-  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-);

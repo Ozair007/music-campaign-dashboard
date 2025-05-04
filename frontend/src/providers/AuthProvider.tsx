@@ -1,12 +1,13 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { createClient, User } from '@supabase/supabase-js';
+import { AuthContextType } from '@/types';
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_ANON_KEY
 );
 
-const AuthContext = createContext(null);
+const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -46,4 +47,10 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
