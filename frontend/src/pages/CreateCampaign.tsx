@@ -1,23 +1,32 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { trpc } from '@/utils/trpc';
-import CampaignForm, { CampaignFormData } from '@/components/CampaignForm';
+import CampaignForm from '@/components/CampaignForm';
 import CampaignModal from '@/components/CampaignModal';
+import { createCampaign } from '@/api/campaigns';
+import { CampaignFormData } from '@/types';
 
 export default function CreateCampaign() {
   const navigate = useNavigate();
-  const mutation = trpc.campaignCreate.useMutation({
-    onSuccess: () => navigate('/dashboard'),
-  });
-
-  const handleSubmit = (data: CampaignFormData) => {
-    mutation.mutate(data);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const handleSubmit = async (data: CampaignFormData) => {
+    setIsLoading(true);
+    try {
+      await createCampaign(data);
+      navigate('/dashboard');
+    } catch (error) {
+      console.error(error);
+      alert('Failed to create campaign');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <CampaignModal title="Create Campaign">
       <CampaignForm
         onSubmit={handleSubmit}
-        isLoading={mutation?.isLoading}
+        isLoading={isLoading}
       />
     </CampaignModal>
   );

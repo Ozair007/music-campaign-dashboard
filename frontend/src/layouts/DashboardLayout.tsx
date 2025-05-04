@@ -2,12 +2,8 @@ import { Outlet } from 'react-router-dom';
 import { Box, AppBar, Toolbar, Typography, Button, IconButton } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useAuth } from '../providers/AuthProvider';
-import { Drawer, CssBaseline } from '@mui/material';
+import { Drawer } from '@mui/material';
 import { Navigation } from '../components/Navigation';
-import { useState } from 'react';
-
-// Add to DashboardLayout component
-const [drawerOpen, setDrawerOpen] = useState(false);
 
 export const DashboardLayout = () => {
   const { user, signOut } = useAuth();

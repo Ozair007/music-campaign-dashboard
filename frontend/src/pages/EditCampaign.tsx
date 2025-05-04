@@ -1,26 +1,57 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { trpc } from '@/utils/trpc';
-import CampaignForm, { CampaignFormData } from '@/components/CampaignForm';
+import { useState, useEffect } from 'react';
+import { fetchCampaigns, updateCampaign } from '@/api/campaigns';
+import CampaignForm from '@/components/CampaignForm';
 import CampaignModal from '@/components/CampaignModal';
+import { Campaign, CampaignFormData } from '@/types';
 
 export default function EditCampaign() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [campaign, setCampaign] = useState<Campaign | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  
-  const { data: campaigns } = trpc.campaignList.useQuery();
-  const mutation = trpc.campaignUpdate.useMutation({
-    onSuccess: () => navigate('/dashboard'),
-  });
+  useEffect(() => {
+    const loadCampaign = async () => {
+      try {
+        const campaigns = await fetchCampaigns();
+        const foundCampaign = campaigns.find((c: Campaign) => c.id === id);
+        if (!foundCampaign) throw new Error('Campaign not found');
+        setCampaign(foundCampaign);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  if (!campaigns) return null;
+    loadCampaign();
+  }, [id]);
 
-  const campaign = campaigns.find((c) => c.id === id);
-  if (!campaign) return <p>Campaign not found</p>;
+  const handleSubmit = async (data: CampaignFormData) => {
+    if (!id) return;
+    
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        ...data,
+        start_date: new Date(data.start_date).toISOString(),
+        end_date: new Date(data.end_date).toISOString()
+      };
 
-  const handleSubmit = (data: CampaignFormData) => {
-    mutation.mutate({ id: id!, ...data });
+      await updateCampaign(id, payload);
+      navigate('/dashboard');
+    } catch (error) {
+      console.error(error);
+      alert('Failed to update campaign');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (isLoading) return <p>Loading...</p>;
+  if (!campaign) return <p>Campaign not found</p>;
 
   return (
     <CampaignModal title="Edit Campaign">
@@ -31,7 +62,7 @@ export default function EditCampaign() {
           end_date: campaign.end_date.slice(0, 10),
         }}
         onSubmit={handleSubmit}
-        isLoading={mutation?.isLoading}
+        isLoading={isSubmitting}
       />
     </CampaignModal>
   );
