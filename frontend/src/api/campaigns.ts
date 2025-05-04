@@ -2,7 +2,7 @@
 import { CampaignFormData } from "@/types";
 import { supabase } from "@/utils/supabase";
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://music-campaign-dashboard-backend.netlify.app/api';
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001/api';
 
 export const fetchCampaigns = async () => {
   const response = await fetch(`${API_BASE}/campaigns`);
