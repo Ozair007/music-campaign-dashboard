@@ -1,146 +1,99 @@
 # Music Campaign Admin Dashboard
 
-A modern full-stack admin dashboard for managing music campaigns, built with:
+An admin dashboard application for managing music campaigns. Built with:
 
--  React + Vite + TypeScript (frontend)
--  Node.js + tRPC + Drizzle ORM + Supabase (backend)
--  TailwindCSS + shadcn/ui (UI)
--  Supabase Storage (image upload)
--  Deployed via Vercel
-
----
-
-## Features
-
--  Admin login via Supabase Auth (email/password)
--  Create, update, delete, and list campaigns
--  Upload campaign banners with image preview + fallback
--  Basic stats (campaign count, active campaigns)
--  Responsive, modern UI with shadcn/ui
--  SPA routing with React Router
+- **Frontend**: React + TypeScript + Shadcn/UI
+- **Backend**: Express + TypeScript
+- **Database**: Supabase (PostgreSQL)
+- **ORM**: Drizzle ORM
 
 ---
 
-## Tech Stack
+## 🌍 Live Demo
 
-| Layer       | Tech                          |
-|-------------|-------------------------------|
-| Frontend    | React, Vite, TypeScript       |
-| UI          | Tailwind CSS, shadcn/ui       |
-| Backend     | Node.js, tRPC, Express        |
-| Database    | Supabase (PostgreSQL)         |
-| ORM         | Drizzle ORM                   |
-| Auth        | Supabase Auth                 |
-| File Upload | Supabase Storage              |
-| Deployment  | Vercel                        |
+🔗 [https://music-campaign-dashboard.netlify.app](https://music-campaign-dashboard.netlify.app)
+
+> **Login Credentials:**
+> - **Email**: uzair.aziz34@gmail.com  
+> - **Password**: 12341234
 
 ---
 
-## Project Structure
+## 🧑‍💻 Branches
 
-├── frontend/ # React + Vite
-│ ├── src/
-│ └── dist/
-├── backend/ # Node + tRPC API
-│ ├── src/
-│ └── supabase/ # Drizzle schema & types
-├── vercel.json # Routing config for Vercel
+- **`main`**: Backend with **Express + TypeScript** (no tRPC)
+- **`feature/trpc-integration`**: Backend with **Express + tRPC + TypeScript**
 
 ---
 
-## Getting Started (Local Setup)
+## 🚀 Deployment
 
-### 1. Clone the Repo
+### 🔧 Backend (Express + TypeScript)
+
+- Deployed on **Render**
+- Auto-deploys from the `main` branch
+- Contains REST APIs connected to Supabase DB
+- Build & start scripts specified in `package.json`
+
+### 🎨 Frontend (React + TypeScript)
+
+- Deployed on **Netlify**
+- Connected to root repo and pointed to frontend directory
+- Auto-deploys from `main` branch
+- Custom build command and publish directory specified in Netlify settings
+
+---
+
+## 📂 Folder Structure
 
 ```bash
+├── frontend/          # React + TypeScript frontend
+│   ├── src/
+│   ├── public/
+│   └── ...
+├── backend/           # Express + TypeScript backend
+│   ├── src/
+│   └── ...
+├── drizzle/           # Drizzle ORM config & migrations
+├── supabase/          # Supabase SQL and seed data
+└── README.md
+```
+
+---
+
+## 🛠 Tech Stack
+
+- **Frontend**: React, TypeScript, Shadcn/UI
+- **Backend**: Express, TypeScript (with optional tRPC)
+- **Database**: Supabase (PostgreSQL)
+- **ORM**: Drizzle ORM
+- **Auth**: Supabase Auth
+- **Hosting**: Netlify (frontend), Render (backend)
+
+---
+
+## 📦 Install & Run Locally
+
+```bash
+# Clone the repository
 git clone https://github.com/Ozair007/music-campaign-dashboard.git
 cd music-campaign-dashboard
-```
 
-### 2. Install Dependencies
-
-- Frontend
+# Install frontend dependencies
 cd frontend
 npm install
+npm run dev
 
-- Backend
+# Install backend dependencies
 cd ../backend
 npm install
-
-# Supabase Setup
-
-  Go to https://supabase.io and create a project.
-
-  Enable Email Auth under Authentication.
-
-  Create a table called campaigns with these columns:
-
-| Column      | Type      | Notes                            |
-| ----------- | --------- | -------------------------------- |
-| id          | uuid      | PK, default: `gen_random_uuid()` |
-| title       | text      | Required                         |
-| brand       | text      | Required                         |
-| start\_date | date      | Required                         |
-| end\_date   | date      | Required                         |
-| budget      | numeric   | Required                         |
-| image\_url  | text      | Optional                         |
-| description | text      | Optional                         |
-| created\_at | timestamp | Default: `now()`                 |
-| updated\_at | timestamp | Default: `now()`                 |
-
-Create a public storage bucket named campaigns.
-
-Enable Row Level Security (RLS) on the table.
-
-Create policies:
-    INSERT → true
-    SELECT → true
-    UPDATE → true
-
-# Environment Variables
-
-- frontend/.env
-
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
-
-- backend/.env
-
-DATABASE_URL=your-supabase-postgres-connection-url
-
-Ensure special characters in the URL (e.g., @, /, :) are URL-encoded!
-
-# Local Dev Scripts
-- Frontend
-
-```bash
-cd frontend
-npm run dev        # Start dev server
-npm run build      # Production build
-npm run preview    # Preview production build
-```
-- Backend
-
-```bash
-cd backend
-npm run dev        # Start Express + tRPC backend
+npm run dev
 ```
 
-# Deployment (Vercel)
-
-This project includes a vercel.json to deploy both frontend + backend.
-Vercel Config Summary
-  Frontend: frontend/ → Vite static build
-  Backend: backend/src/server.ts → tRPC + Express API
-  Routes:
-      /trpc/* → backend API
-      / and all SPA paths → frontend/dist/index.html
-Steps
-    Connect this repo to Vercel
-    Add the following environment variables:
-        Frontend:
-            VITE_SUPABASE_URL
-            VITE_SUPABASE_ANON_KEY
-        Backend:
-            DATABASE_URL
-    Deploy!
+# Start Concurrently
+In root directory run:
+```bash
+npm install
+npm run install-all
+npm run dev
+```
