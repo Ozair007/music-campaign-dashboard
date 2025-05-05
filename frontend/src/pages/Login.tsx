@@ -54,7 +54,7 @@ export default function Login() {
             {errorMsg && <p className="text-sm text-red-600">{errorMsg}</p>}
           </CardContent>
           <CardFooter>
-            <Button type="submit" className="w-full mt-1">
+            <Button type="submit" className="w-full mt-1 cursor-pointer">
               Login
             </Button>
           </CardFooter>
